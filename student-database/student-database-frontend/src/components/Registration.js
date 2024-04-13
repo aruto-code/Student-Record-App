@@ -3,13 +3,15 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 
 function RegisterForm({ onRegister }) {
+  const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post("http://localhost:3000/register", {
+      const response = await axios.post("http://localhost:5000/register", {
+        name,
         username,
         password,
       });
@@ -17,6 +19,7 @@ function RegisterForm({ onRegister }) {
         setIsSuccess(true);
       }
       onRegister();
+      setName("");
       setUsername("");
       setPassword("");
     } catch (error) {
@@ -35,7 +38,13 @@ function RegisterForm({ onRegister }) {
         User Registered Successfully
       </span>
       <div className='register-form'>
-        <h2>New User Registeration</h2>
+        <h2>New User Registration</h2>
+        <input
+          type='text'
+          placeholder='Name'
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
         <input
           type='text'
           placeholder='Username'

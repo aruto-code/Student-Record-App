@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mysql = require('mysql');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -26,39 +28,71 @@ db.connect((err) => {
 });
 
 
-app.post('/register', (req, res) => {
-  const { username, password } = req.body;
-  const query = `INSERT INTO users (username, password) VALUES (?, ?)`;
-  db.query(query, [username, password], (err, result) => {
-    if (err) {
-      console.error("Error registering user:", err);
-      res.status(500).json({ error: "An error occurred while registering user" });
-    } else {
-      res.status(200).json({ message: "User registered successfully" });
-    }
-  });
-});
+app.post('/login', (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-
-
-app.post("/login", (req, res) => {
-  const { username, password } = req.body;
-  const query = `SELECT * FROM users WHERE username = ? AND password = ?`;
-  db.query(query, [username, password], (err, result) => {
-    if (err) {
-      console.error("Error logging in:", err);
-      res.status(500).json({ error: "An error occurred while logging in" });
-    } else {
-      if (result.length > 0) {
-        res
-          .status(200)
-          .json({ message: "Login successful", userId: result[0].id });
+    // Check if user exists in the database
+    db.query('SELECT * FROM users WHERE username = ?', [email], async (err, result) => {
+      if (err) {
+        console.error('Error logging in:', err);
+        res.status(500).json({ error: 'An error occurred while logging in' });
       } else {
-        res.status(401).json({ error: "Invalid credentials" });
+        if (result.length > 0) {
+          // User found, check password
+          const user = result[0];
+          const isPasswordValid = await bcrypt.compare(password, user.password);
+          if (isPasswordValid) {
+            // Password is correct, generate JWT token
+            const token = jwt.sign(
+              { id: user.id, email: user.email },
+              'arushee@70550', // replace with your secret key
+              { expiresIn: '1h' } // Token expires in 1 hour
+            );
+            res.status(200).json({ message: 'Login successful', token });
+            console.log(token);
+          } else {
+            // Password is incorrect
+            res.status(401).json({ error: 'Invalid credentials' });
+          }
+        } else {
+          // User not found
+          res.status(404).json({ error: 'User not found' });
+        }
       }
+    });
+  } catch (error) {
+    console.error('Error logging in:', error);
+    res.status(500).json({ error: 'An error occurred while logging in' });
+  }
+});
+
+
+// Route for user registration
+app.post('/register', (req, res) => {
+  const { name, username, password } = req.body;
+  // Hash the password
+  bcrypt.hash(password, 10, (err, hashedPassword) => {
+    if (err) {
+      console.error('Error hashing password:', err);
+      res.status(500).json({ error: 'An error occurred while hashing password' });
+    } else {
+      // Insert the user data into the database
+      const INSERT_USER_QUERY = `INSERT INTO users (name, username, password) VALUES (?, ?, ?)`;
+      db.query(INSERT_USER_QUERY, [name, username, hashedPassword], (err, result) => {
+        if (err) {
+          console.error('Error registering user:', err);
+          res.status(500).json({ error: 'An error occurred while registering user' });
+        } else {
+          res.status(200).json({ message: 'User registered successfully' });
+        }
+      });
     }
   });
 });
+
+
+
 
 // Route to handle fetching search options
 app.get('/students/search-options', (req, res) => {
@@ -99,24 +133,49 @@ app.get('/students/search', (req, res) => {
 
 // Define routes here...
 
-
-
-
 // Route to create a student record
+
 app.post('/students', (req, res) => {
   const { enrollmentNumber, facultyNumber, name, address, hall, course, branch, semester } = req.body;
   const INSERT_STUDENT_QUERY = `INSERT INTO students (enrollment_number, faculty_number, name, address, hall, course, branch, semester) 
                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-  db.query(INSERT_STUDENT_QUERY, [enrollmentNumber, facultyNumber, name, address, hall, course, branch, semester], (err, result) => {
+  const SELECT_ENROLLMENT_QUERY = `SELECT * FROM students WHERE enrollment_number = ?`;
+  const SELECT_FACULTY_QUERY = `SELECT * FROM students WHERE faculty_number = ?`;
+  
+  db.query(SELECT_ENROLLMENT_QUERY, [enrollmentNumber], (err, enrollmentResult) => {
     if (err) {
-      console.error('Error creating student:', err);
-      res.status(500).send('Error creating student');
-    } else {
-      console.log('Student created successfully');
-      res.status(201).send('Student created successfully');
+      console.error('Error checking enrollment number:', err);
+      return res.status(500).json({ message: 'Error checking enrollment number' });
     }
+    if (enrollmentResult.length > 0) {
+      return res.status(409).json({ message: 'Enrollment number already exists' });
+    }
+    
+    db.query(SELECT_FACULTY_QUERY, [facultyNumber], (err, facultyResult) => {
+      if (err) {
+        console.error('Error checking faculty number:', err);
+        return res.status(500).json({ message: 'Error checking faculty number' });
+      }
+      if (facultyResult.length > 0) {
+        return res.status(409).json({ message: 'Faculty number already exists' });
+      }
+      
+      // Insert the student record if enrollment and faculty numbers are unique
+      db.query(INSERT_STUDENT_QUERY, [enrollmentNumber, facultyNumber, name, address, hall, course, branch, semester], (err, result) => {
+        if (err) {
+          console.error('Error creating student:', err);
+          res.status(500).json({ message: 'Error creating student' });
+        } else {
+          console.log('Student created successfully');
+          res.status(201).send('Student created successfully');
+        }
+      });
+    });
   });
 });
+
+
+
   
   // Get all students
   app.get('/students', (req, res) => {

@@ -9,10 +9,11 @@ function LoginForm({ onLogin }) {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post("http://localhost:3000/login", {
+      const response = await axios.post("http://localhost:5000/login", {
         username,
         password,
       });
+      console.log(response.data);
       onLogin(response.data.userId);
       setUsername("");
       setPassword("");
@@ -23,7 +24,7 @@ function LoginForm({ onLogin }) {
 
   return (
     <div className='login-form'>
-      <h2>Existing User Login</h2>
+      <h2>Existing User Login -- check</h2>
       <input
         type='text'
         placeholder='Username'

@@ -58,6 +58,10 @@ const InsertStudentsRecord = () => {
         if (response.ok) {
           setSuccessMessage('Student record added successfully');
           setErrorMessage('');
+        } else if (response.status === 409) { // Check for conflict status (e.g., faculty number or enrollment number already exists)
+          response.json().then(data => {
+            setErrorMessage(data.message); // Display the error message received from the server
+          });
         } else {
           setErrorMessage('Failed to add student record');
           setSuccessMessage('');
@@ -86,7 +90,7 @@ const InsertStudentsRecord = () => {
   };
 
   const handleGoHome = () => {
-    navigate('/home');
+    navigate('/'); // Navigate to the landing page
   };
 
   return (
