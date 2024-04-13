@@ -25,6 +25,41 @@ db.connect((err) => {
   console.log('Connected to MySQL');
 });
 
+
+app.post('/register', (req, res) => {
+  const { username, password } = req.body;
+  const query = `INSERT INTO users (username, password) VALUES (?, ?)`;
+  db.query(query, [username, password], (err, result) => {
+    if (err) {
+      console.error("Error registering user:", err);
+      res.status(500).json({ error: "An error occurred while registering user" });
+    } else {
+      res.status(200).json({ message: "User registered successfully" });
+    }
+  });
+});
+
+
+
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  const query = `SELECT * FROM users WHERE username = ? AND password = ?`;
+  db.query(query, [username, password], (err, result) => {
+    if (err) {
+      console.error("Error logging in:", err);
+      res.status(500).json({ error: "An error occurred while logging in" });
+    } else {
+      if (result.length > 0) {
+        res
+          .status(200)
+          .json({ message: "Login successful", userId: result[0].id });
+      } else {
+        res.status(401).json({ error: "Invalid credentials" });
+      }
+    }
+  });
+});
+
 // Route to handle fetching search options
 app.get('/students/search-options', (req, res) => {
   db.query('SHOW COLUMNS FROM students', (err, result) => {
