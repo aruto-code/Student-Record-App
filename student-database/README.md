@@ -16,6 +16,13 @@ For Database
   semester VARCHAR(50)
 );
 
+CREATE TABLE users (
+    username VARCHAR(255) NOT NULL PRIMARY KEY,
+    password VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL
+);
+
+
 4. SHOW DATABASES;
 
 5. USE student_database;
