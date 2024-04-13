@@ -28,12 +28,12 @@ db.connect((err) => {
 });
 
 
-app.post('/login', (req, res) => {
+app.post('/', (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
     // Check if user exists in the database
-    db.query('SELECT * FROM users WHERE username = ?', [email], async (err, result) => {
+    db.query('SELECT * FROM users WHERE username = ?', [username], async (err, result) => {
       if (err) {
         console.error('Error logging in:', err);
         res.status(500).json({ error: 'An error occurred while logging in' });
@@ -45,12 +45,11 @@ app.post('/login', (req, res) => {
           if (isPasswordValid) {
             // Password is correct, generate JWT token
             const token = jwt.sign(
-              { id: user.id, email: user.email },
+              { id: user.id, username: user.username },
               'arushee@70550', // replace with your secret key
               { expiresIn: '1h' } // Token expires in 1 hour
             );
             res.status(200).json({ message: 'Login successful', token });
-            console.log(token);
           } else {
             // Password is incorrect
             res.status(401).json({ error: 'Invalid credentials' });
@@ -66,7 +65,6 @@ app.post('/login', (req, res) => {
     res.status(500).json({ error: 'An error occurred while logging in' });
   }
 });
-
 
 // Route for user registration
 app.post('/register', (req, res) => {

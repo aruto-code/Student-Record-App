@@ -21,7 +21,7 @@ const InsertStudentsRecord = () => {
 
     // Validate name field to allow only alphabetic characters
     if (name === 'name') {
-      if (!/^[a-zA-Z]+$/.test(value)) {
+      if (!/^[a-zA-Z\s]*$/.test(value)) {
         setErrorMessage('Name must contain only alphabetic characters');
       } else {
         setFormData({
@@ -107,6 +107,7 @@ const InsertStudentsRecord = () => {
                       Enrollment Number<span style={{ color: 'red' }}>*</span>:
                     </label>
                     <input type="text" className="form-control" name="enrollmentNumber" value={formData.enrollmentNumber} onChange={handleChange} required />
+                    {errorMessage.includes("enrollment") && <p style={{ color: 'red' }}>{errorMessage}</p>}
                   </div>
                   <div className="mb-3">
                     <label className="form-label" style={{ color: 'black' }}>
@@ -119,7 +120,7 @@ const InsertStudentsRecord = () => {
                       Name<span style={{ color: 'red' }}>*</span>:
                     </label>
                     <input type="text" className="form-control" name="name" value={formData.name} onChange={handleChange} required />
-                    {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+                    {errorMessage.includes("name") && <p style={{ color: 'red' }}>{errorMessage}</p>}
                   </div>
                   <div className="mb-3">
                     <label className="form-label" style={{ color: 'black' }}>Address:</label>
@@ -165,7 +166,7 @@ const InsertStudentsRecord = () => {
               )}
               {errorMessage && (
                 <>
-                  <p>{errorMessage}</p>
+                  <p style={{ color: 'red' }}>{errorMessage}</p>
                   <button className="btn btn-danger" onClick={handleSubmit}>Try Again</button>
                 </>
               )}

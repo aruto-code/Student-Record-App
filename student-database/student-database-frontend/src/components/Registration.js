@@ -28,38 +28,52 @@ function RegisterForm({ onRegister }) {
   };
 
   return (
-    <div className='container'>
-      <span
-        className='success'
+    <div
+      className="container-fluid d-flex justify-content-center align-items-center"
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(to right, #4a148c, #ff6f00)", // Background gradient
+      }}
+    >
+      <div
+        className="card p-4"
         style={{
-          display: isSuccess ? "block" : "none",
+          maxWidth: "400px",
+          width: "100%",
+          backgroundColor: "rgba(255, 255, 255, 0.8)",
+          boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
         }}
       >
-        User Registered Successfully
-      </span>
-      <div className='register-form'>
-        <h2>New User Registration</h2>
+        <h2 className="card-title text-center mb-4">New User Registration</h2>
         <input
-          type='text'
-          placeholder='Name'
+          type="text"
+          className="form-control mb-3"
+          placeholder="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <input
-          type='text'
-          placeholder='Username'
+          type="text"
+          className="form-control mb-3"
+          placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
         <input
-          type='password'
-          placeholder='Password'
+          type="password"
+          className="form-control mb-3"
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button onClick={handleRegister}>Register</button>
-        <p>
-          Existing User? <Link to='/'>Login</Link>
+        <button
+          className="btn btn-primary btn-block mb-3"
+          onClick={handleRegister}
+        >
+          Register
+        </button>
+        <p className="text-center">
+          Existing User? <Link to="/">Login</Link>
         </p>
       </div>
     </div>
