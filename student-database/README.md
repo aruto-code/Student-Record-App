@@ -23,6 +23,7 @@ CREATE TABLE users (
 );
 
 
+
 4. SHOW DATABASES;
 
 5. USE student_database;
